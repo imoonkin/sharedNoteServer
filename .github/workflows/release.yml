@@ -26,6 +26,4 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          ./sharedNoteServer
-          run.sh
+        files: sharedNoteServer.tar.gz
