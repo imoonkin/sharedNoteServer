@@ -4,25 +4,31 @@ import (
 	"database/sql"
 	"github.com/go-sql-driver/mysql"
 	"log"
+	"time"
 )
 
 type note struct {
-	latitude  float32
-	longitude float32
-	title     string
-	address   string
-	content   string
+	Id         int64   `json:"id"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
+	Title      string  `json:"title"`
+	Address    string  `json:"address"`
+	Content    string  `json:"content"`
+	UpdateTime int64   `json:"updateTime"`
+	Visible    bool    `json:"visible"`
+
+	UpdateTimeFormatted string `json:"updateTimeFormatted"`
 }
 
 var db *sql.DB
 
 func initDB() {
 	cfg := mysql.Config{
-		User:   "owen",
-		Passwd: "123haha123",
+		User:   "imoonkin",
+		Passwd: "passwd",
 		Net:    "tcp",
-		Addr:   "127.0.0.1:3306",
-		DBName: "sharedNotes",
+		Addr:   "hostmysql:3306",
+		DBName: "sharednotedb",
 	}
 	var err error
 	if db, err = sql.Open("mysql", cfg.FormatDSN()); err != nil {
@@ -37,22 +43,22 @@ func initDB() {
 
 func addNote(n note) error {
 	if _, err := db.Exec(
-		"insert into sharednote (latitude,longitude,title,address,content) values (?,?,?,?,?)",
-		n.latitude, n.longitude, n.title, n.address, n.content); err != nil {
+		"insert into sharedNote (latitude,longitude,title,address,content,updateTime,visible) values (?,?,?,?,?,?,?)",
+		n.Latitude, n.Longitude, n.Title, n.Address, n.Content, time.Now().Unix(), true); err != nil {
 		return err
 	}
 	return nil
 }
-func rangeFetch(lat1, lng1, lat2, lng2 float32) ([]note, error) {
+func rangeFetch(lat1, lng1, lat2, lng2 float64) ([]note, error) {
 	ret := []note{}
-	rows, err := db.Query("select * from sharednote where latitude between lat1 and lat2 and longitude between lng1 and lng2 limit 100")
+	rows, err := db.Query("select id,latitude,longitude,title,address,content,updateTime,visible from sharedNote where latitude between ? and ? and longitude between ? and ? limit 100", lat1, lat2, lng1, lng2)
 	if err != nil {
 		return ret, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var n note
-		if err = rows.Scan(&n.latitude, &n.longitude, &n.title, &n.address, &n.content); err != nil {
+		if err = rows.Scan(&n.Id, &n.Latitude, &n.Longitude, &n.Title, &n.Address, &n.Content, &n.UpdateTime, &n.Visible); err != nil {
 			return ret, err
 		}
 		ret = append(ret, n)

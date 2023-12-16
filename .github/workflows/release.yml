@@ -1,0 +1,33 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Build
+      run: go build -o ./main ./...
+    - run: mkdir sharedNoteServer; mv main sharedNoteServer/sharedNoteServer; mv run.sh sharedNoteServer/; mv sharedNoteServer.yaml sharedNoteServer/; mv sharednote-cert-issuer.yaml sharedNoteServer/
+    - name: Tar
+      run: tar czf sharedNoteServer.tar.gz sharedNoteServer
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: sharedNoteServer.tar.gz

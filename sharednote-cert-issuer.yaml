@@ -1,0 +1,23 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: sharednote-issuer
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: iwarrior.xr@gmail.com
+    privateKeySecretRef:
+      name: acme-account-key
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: traefik
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sharednote-cert
+type: kubernetes.io/tls
+stringData:
+  tls.key: ""
+  tls.crt: ""
