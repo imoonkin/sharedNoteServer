@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"math"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 	"strconv"
 )
 
-func parseLatlon(param url.Values, s string) (float32, bool) {
+func parseLatlon(param url.Values, s string) (float64, bool) {
 	if len(param[s]) != 1 {
 		return 0, false
 	}
@@ -20,10 +21,21 @@ func parseLatlon(param url.Values, s string) (float32, bool) {
 	if math.IsNaN(ll) || math.IsInf(ll, 0) || ll < (-370) || 370 < ll {
 		return 0, false
 	}
-	return float32(ll), true
+	return ll, true
 }
 
 var rangeHandler = func(resp http.ResponseWriter, req *http.Request) {
+	if len(req.Header.Get("X-ENV")) > 0 && len(req.Header.Get("X-Redirect")) == 0 {
+		env := req.Header.Get("X-ENV")
+		req.Header.Set("X-Redirect", "1")
+		req.URL.Host = "shared-note-server" + env
+		client := http.Client{}
+		respproxy, _ := client.Do(req)
+		resp.WriteHeader(respproxy.StatusCode)
+		body, _ := io.ReadAll(respproxy.Body)
+		resp.Write(body)
+		return
+	}
 	param := req.URL.Query()
 	lat1, ok1 := parseLatlon(param, "latitude1")
 	lat2, ok2 := parseLatlon(param, "latitude2")

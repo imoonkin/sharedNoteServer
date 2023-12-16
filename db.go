@@ -4,25 +4,31 @@ import (
 	"database/sql"
 	"github.com/go-sql-driver/mysql"
 	"log"
+	"time"
 )
 
 type note struct {
-	latitude  float32
-	longitude float32
-	title     string
-	address   string
-	content   string
+	id         int64
+	latitude   float64
+	longitude  float64
+	title      string
+	address    string
+	content    string
+	updateTime int64
+	visible    bool
+
+	updateTimeFormatted string
 }
 
 var db *sql.DB
 
 func initDB() {
 	cfg := mysql.Config{
-		User:   "owen",
-		Passwd: "123haha123",
+		User:   "root",
+		Passwd: "passwd",
 		Net:    "tcp",
-		Addr:   "127.0.0.1:3306",
-		DBName: "sharedNotes",
+		Addr:   "host.k3d.internal:3306",
+		DBName: "sharednotedb",
 	}
 	var err error
 	if db, err = sql.Open("mysql", cfg.FormatDSN()); err != nil {
@@ -37,13 +43,13 @@ func initDB() {
 
 func addNote(n note) error {
 	if _, err := db.Exec(
-		"insert into sharednote (latitude,longitude,title,address,content) values (?,?,?,?,?)",
-		n.latitude, n.longitude, n.title, n.address, n.content); err != nil {
+		"insert into sharednote (latitude,longitude,title,address,content,updateTime,visible) values (?,?,?,?,?,?,?)",
+		n.latitude, n.longitude, n.title, n.address, n.content, time.Now().Unix(), true); err != nil {
 		return err
 	}
 	return nil
 }
-func rangeFetch(lat1, lng1, lat2, lng2 float32) ([]note, error) {
+func rangeFetch(lat1, lng1, lat2, lng2 float64) ([]note, error) {
 	ret := []note{}
 	rows, err := db.Query("select * from sharednote where latitude between lat1 and lat2 and longitude between lng1 and lng2 limit 100")
 	if err != nil {
