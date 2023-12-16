@@ -15,8 +15,7 @@ func main() {
 	defer f.Close()
 
 	//initDB()
-
-	http.Handle("/", http.FileServer(http.Dir("C:\\SoftWare\\WebProjects\\sharednotes\\dist"))) // todo use nginx
+	http.HandleFunc("/", fileHandler)
 	http.HandleFunc("/range", rangeHandler)
 	http.HandleFunc("/add", addNoteHandler)
 
