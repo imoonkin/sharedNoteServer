@@ -22,7 +22,7 @@ jobs:
     - name: Build
       run: go build -o ./sharedNoteServer ./...
     - name: Tar
-      run: tar czf sharedNoteServer.tar.gz sharedNoteServer run.sh
+      run: tar czf sharedNoteServer.tar.gz sharedNoteServer run.sh sharedNoteServer.yaml
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
