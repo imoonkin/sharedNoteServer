@@ -27,5 +27,5 @@ var addNoteHandler = func(resp http.ResponseWriter, req *http.Request) {
 		log.Fatalln(err)
 	}
 	resp.WriteHeader(http.StatusOK)
-
+	resp.Write([]byte("{}"))
 }
